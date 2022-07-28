@@ -1,96 +1,14 @@
-# import os
-import re, yt_dlp
-
-class Color:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-class Download:
-    def __init__(self, video_url, output_format, is_playlist):
-        self.url = video_url
-        self.format = output_format
-        self.is_playlist = is_playlist
-        self.song_id = []
-        self.declare_option(output_format)
-        self.download(video_url)
+import os, re
+from backend import Download, Color
 
 
+version = "0.2.0"
+supported_formats = ["mp3", "mp4"]
+supported_file_types = ["txt"]
 
 
-
-    def declare_option(self, post):
-        if post == "mp3":
-            global ydl_opts
-            ydl_opts = {
-            'format': 'bestaudio/best',
-            'ffmpeg-location': 'C:\\Users\Raj Dave\AppData\Local\Programs\Python\Python310\Lib\site-packages\\ffmpeg',
-            'postprocessors': [
-                {
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '320',
-                }   ]   }
-        elif post == "mp4":
-            ydl_opts = {
-            'format': 'best',
-            'ffmpeg-location': 'C:\\Users\Raj Dave\AppData\Local\Programs\Python\Python310\Lib\site-packages\\ffmpeg',
-            }
-        else:
-            print("Invalid format")
-            return False
-
-
-
-    def download(self, url):
-        if not re.search(r'^(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+$', url):
-            return "invalid URL"
-
-        if "=" in url:
-            self.song_id.append(url.split("=")[1])
-        elif url.startswith("youtu.be"):
-            self.song_id.append(url.split("/")[-1])
-        elif "/" in url:
-            self.song_id.append(url.split("/")[3])
-        else:
-            self.song_id.append(None)
-
-        song_id = self.song_id[0]
-        song_id.strip('=').strip('list=')
-
-        video_title = []
-
-        if not self.is_playlist:
-            if "&list=" in url:
-                url = url.split("&list=")[0]
-
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            video = ydl.extract_info(url, download=True)
-            video_title.append(video.get('title', None))
-            # for file in os.listdir('./'):
-                # if file.endswith('.mp3') or file.endswith('.mp4'):
-                #     try:
-                #         os.rename(file, f'./download/{video_title[0]}.{self.format}')
-                #     except FileExistsError:
-                #         print(Color.FAIL, "File {file} already exists.")
-                #     except Exception as err:
-                #         print(Color.FAIL, f"Error {err}")
-
-
-
-
-
-
-
+# Start the program
 print(" ")
-
 print(Color.OKBLUE, """
 $$$$$$$\              $$\               $$\     $$\                $$$$$$$$\        $$\                       $$$$$$$\                                    $$\                           $$\                     
 $$  __$$\             $  |              \$$\   $$  |               \__$$  __|       $$ |                      $$  __$$\                                   $$ |                          $$ |                    
@@ -105,72 +23,113 @@ $$ |  $$ |\$$$$$$$ |$$ |$$$$$$$  |          $$ |  \$$$$$$  |\$$$$$$  |$$ |\$$$$$
                \______/                                                                                                                                                                                         
 """ + Color.ENDC)
 print(" ")
-
-
-# >> Get Content TYPE
-content_type = input(f"Enter the type of content you want to download: {Color.BOLD}(Video/Playlist) ")
-if content_type is None:
-    print(Color.FAIL, "Invalid input")
-    exit()
-if content_type.lower().startswith("v"):
-    is_playlist = False
-elif content_type.lower().startswith("p"):
-    is_playlist = True
-else:
-    print(f"{Color.FAIL}Error: Invalid input. You must reply with V or P.{Color.ENDC}")
-    exit()
+print(f"{Color.OKGREEN}Welcome to Raj's Youtube Downloader")
+print(f"Made by Raj Dave#3215. Version {version}{Color.ENDC}")
+print(" ")
 print(" ")
 
 
 
-# >> Get Content input Type
-input_type = input(f"Do you want to give a .txt file or a URL? {Color.BOLD}(.txt/URL) ")
-if input_type is None:
-    print(f"{Color.FAIL}Error: Invalid input. You must reply with .txt or URL.{Color.ENDC}")
-    exit()
-if input_type.lower().replace(".", "").startswith("t"):
-    input_type = "txt"
-elif input_type.lower().startswith("u"):
-    input_type = "url"
-else:
-    print(f"{Color.FAIL}Error: Invalid input. You must reply with .txt or URL.{Color.ENDC}")
-    exit(1)
-print(" ")
+# Inputs
+# 1. input_type => txt or url
+# 2. is_playlist => True or False
+# 3. video_source => YT url or filepath
+# 4. output_format => mp3 or mp4
 
 
-# >> Get Content URL
-url = input(f"{Color.BOLD}Enter YouTube Video URL: ")
-if not url:
-    print(Color.FAIL, "Error: You must enter a URL.")
-    exit(1)
+class Initialize:
+    def __init__(self):
+        self.input_type = ""    # "file" or "url"
+        self.is_playlist = False    # True or False
+        self.video_source = ""  # filepath or actual url
+        self.output_format = "" # mp3/mp4
 
-if not re.search(r'^(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+$', url):
-    print(f"{Color.FAIL}Error: Invalid YouTube URL.{Color.ENDC}")
-    exit(1)
-print(" ")
+        self.get_input_type() # Get input_type and video_source
+        self.get_output_format() # Get output_format
+        self.get_is_playlist() # Get is_playlist
 
-
-# >> Get Post Processing
-post = input(f"What format do you want the Video to be in? {Color.BOLD}(mp3/mp4) ")
-if post is None:
-    print("Format not specified. Defaulting to mp3.")
-    video_format = "mp3"
-if post.lower().startswith("mp3"):
-    video_format: str = "mp3"
-elif post.lower().startswith("mp4"):
-    video_format: str = "mp4"
-else:
-    print(f"{Color.FAIL}Error: Invalid input. You must reply with mp3 or mp4.{Color.ENDC}")
-    exit(1)
-print(" ")
-
-print(Color.HEADER, f"{Color.BOLD}Downloading...{Color.ENDC}")
+        dwn = Download(input_type=self.input_type, is_playlist=self.is_playlist, video_source=self.video_source, output_format=self.output_format)
+        if dwn in ["invalid_input_type", "invalid_url", "invalid_output_type"]:
+            print(f"{Color.FAIL}There was an error downloading the file!")
+            print(f"Error code: {dwn}{Color.ENDC}")
 
 
-try:
-    # noinspection PyUnboundLocalVariable
-    Download(url, video_format, is_playlist)
-except Exception as e:
-    print(f"{Color.FAIL}Error: {e}{Color.ENDC}")
-    exit()
 
+    def declare_option(self, output_format):
+        self.output_format = output_format
+        self.is_playlist = False
+        self.input_type = ""
+        self.video_source = ""
+
+
+    def get_input_type(self):   # Gets input_type and video_source
+        self.input_type = input("Enter input type: (File/URL) ")
+
+        if self.input_type.lower().startswith("f"): # If it's a File
+            self.input_type = "file"
+            self.video_source = input("Enter filepath: ")   # Get filepath
+            if not os.path.exists(self.video_source):   # If filepath doesn't exist
+                print(f"{Color.FAIL}Filepath does not exist{Color.ENDC}")
+                self.get_input_type()
+            elif not self.video_source.endswith("txt") :  # If file is not txt/csv
+                print(f"{Color.FAIL}File format must be match {supported_file_types}{Color.ENDC}")
+                self.get_input_type()
+
+
+        elif self.input_type.lower().startswith("u"):  # If it's a URL
+            self.input_type = "url"
+            self.video_source = input("Enter URL: ")    # Get URL
+            if not re.match(r'^(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+$', self.video_source):  # Check YouTube URL with regex
+                print(f"{Color.FAIL}Invalid URL{Color.ENDC}")
+                self.get_input_type()
+
+        else:
+            print(f"{Color.FAIL}Invalid input type. Send either F or U{Color.ENDC}")
+            self.get_input_type()
+
+
+
+    def get_output_format(self):    # Gets output_format
+        self.output_format = input("Enter output format: ") # Get output_format
+        if self.output_format.lower().startswith("mp3"):    # If it's mp3
+            self.output_format = "mp3"
+        elif self.output_format.lower().startswith("mp4"):  # If it's mp4
+            self.output_format = "mp4"
+        else:
+            print(f"{Color.FAIL}Invalid output format{Color.ENDC}. Supported formats: {supported_formats}")
+            self.get_output_format()
+
+
+    def get_is_playlist(self):  # Gets is_playlist
+        if self.input_type == "url":
+            if "&list=" in self.video_source:
+                self.is_playlist = input("Detected a Playlist URL. Do you want to download the whole playlist? (y/n): ")
+                if self.is_playlist.lower().startswith("y"):
+                    self.is_playlist = True
+                elif self.is_playlist.lower().startswith("n"):
+                    self.is_playlist = False
+
+                else:
+                    print(f"{Color.FAIL}Invalid input{Color.ENDC}. Reply with y or n")
+                    self.get_is_playlist()
+
+
+        if self.input_type == "file":
+            self.is_playlist = input("This file may contain a playlist. Do you want to download the whole playlist for each video? (y/n): ")
+            if self.is_playlist.lower().startswith("y"):
+                self.is_playlist = True
+            elif self.is_playlist.lower().startswith("n"):
+                self.is_playlist = False
+            else:
+                print(f"{Color.FAIL}Invalid input{Color.ENDC}. Reply with y or n")
+                self.get_is_playlist()
+
+
+
+
+
+while True:
+    Initialize()
+    print(" ")
+    print(" ")
+    print(" ")
