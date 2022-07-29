@@ -24,14 +24,15 @@ class Color:
 # 2. is_playlist => bool
 # 3. video_source => url | path to input_type
 # 4. output_format => mp3 or mp4
-
+# 5. output_path => path to output_format
 
 class Download:
-    def __init__(self, output_format: str, is_playlist: bool , input_type: str, video_source: str) -> None:
+    def __init__(self, output_format: str, is_playlist: bool , input_type: str, video_source: str, output_path: str = None) -> None:
         self.video_source = video_source
         self.output_format = output_format
         self.is_playlist = is_playlist
         self.song_id = []
+        self.output_path = output_path
         self.declare_option(output_format)
 
 
@@ -85,6 +86,8 @@ class Download:
             self.return_class_error("invalid_input_type")
 
 
+
+
     def return_class_error(self, msg) -> None:
         print(f"{Color.FAIL}{msg}{Color.ENDC}")
         return msg
@@ -117,11 +120,19 @@ class Download:
             video_title.append(video.get('title', None))
             for file in os.listdir('./'):
                 if file.endswith('.mp3') or file.endswith('.mp4'):
-                    try:
-                        if not os.path.exists('./downloads'):
-                            os.makedirs('./downloads')
-                        os.rename(file, './downloads/' + file)
-                    except FileExistsError:
-                        print(f"{Color.WARNING}File {file} already exists.{Color.ENDC}")
-                    except Exception as err:
-                        return self.return_class_error(err)
+                    if self.output_path is not None:
+                        try:
+                            os.rename(file, self.output_path + "/" + file)
+                        except FileExistsError:
+                            print(f"{Color.WARNING}File already exists. Skipping.{Color.ENDC}")
+                        except Exception as err:
+                            self.return_class_error(err)
+                    else:
+                        try:
+                            if not os.path.exists('./downloads'):
+                                os.makedirs('./downloads')
+                            os.rename(file, './downloads/' + file)
+                        except FileExistsError:
+                            print(f"{Color.WARNING}File {file} already exists.{Color.ENDC}")
+                        except Exception as err:
+                            return self.return_class_error(err)

@@ -2,7 +2,10 @@ import os, re
 from backend import Download, Color
 
 
-version = "0.2.0"
+
+
+
+version = "0.2.1"
 supported_formats = ["mp3", "mp4"]
 supported_file_types = ["txt"]
 
@@ -35,6 +38,7 @@ print(" ")
 # 2. is_playlist => True or False
 # 3. video_source => YT url or filepath
 # 4. output_format => mp3 or mp4
+# 5. output_path => filepath
 
 
 class Initialize:
@@ -43,12 +47,15 @@ class Initialize:
         self.is_playlist = False    # True or False
         self.video_source = ""  # filepath or actual url
         self.output_format = "" # mp3/mp4
+        self.output_path = ""   # Output path
 
         self.get_input_type() # Get input_type and video_source
         self.get_output_format() # Get output_format
+        self.get_output_path() # Get output_path
         self.get_is_playlist() # Get is_playlist
 
-        dwn = Download(input_type=self.input_type, is_playlist=self.is_playlist, video_source=self.video_source, output_format=self.output_format)
+
+        dwn = Download(input_type=self.input_type, is_playlist=self.is_playlist, video_source=self.video_source, output_format=self.output_format, output_path=self.output_path)
         if dwn in ["invalid_input_type", "invalid_url", "invalid_output_type"]:
             print(f"{Color.FAIL}There was an error downloading the file!")
             print(f"Error code: {dwn}{Color.ENDC}")
@@ -90,7 +97,7 @@ class Initialize:
 
 
     def get_output_format(self):    # Gets output_format
-        self.output_format = input("Enter output format: ") # Get output_format
+        self.output_format = input("Enter output format: (mp3/mp4) ") # Get output_format
         if self.output_format.lower().startswith("mp3"):    # If it's mp3
             self.output_format = "mp3"
         elif self.output_format.lower().startswith("mp4"):  # If it's mp4
@@ -98,6 +105,14 @@ class Initialize:
         else:
             print(f"{Color.FAIL}Invalid output format{Color.ENDC}. Supported formats: {supported_formats}")
             self.get_output_format()
+
+
+    def get_output_path(self):
+        self.output_path = input("Enter output path: ")
+        if not os.path.exists(self.output_path):
+            print(f"{Color.FAIL}Output path does not exist{Color.ENDC}")
+            self.get_output_path()
+
 
 
     def get_is_playlist(self):  # Gets is_playlist
