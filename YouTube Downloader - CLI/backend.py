@@ -121,12 +121,17 @@ class Download:
             for file in os.listdir('./'):
                 if file.endswith('.mp3') or file.endswith('.mp4'):
                     if self.output_path is not None:
+                        if not os.path.exists(self.output_path):
+                            os.makedirs(self.output_path)
+
                         try:
                             os.rename(file, self.output_path + "/" + file)
                         except FileExistsError:
                             print(f"{Color.WARNING}File already exists. Skipping.{Color.ENDC}")
                         except Exception as err:
                             self.return_class_error(err)
+
+
                     else:
                         try:
                             if not os.path.exists('./downloads'):

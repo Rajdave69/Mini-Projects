@@ -109,8 +109,9 @@ class Initialize:
 
     def get_output_path(self):
         self.output_path = input("Enter output path: ")
-        if not os.path.exists(self.output_path):
-            print(f"{Color.FAIL}Output path does not exist{Color.ENDC}")
+        # regex to check if valid path
+        if not re.match(r'^(/[a-zA-Z\d_\-\s]+)+$', self.output_path):
+            print(f"{Color.FAIL}Invalid output path{Color.ENDC}")
             self.get_output_path()
 
 
