@@ -27,12 +27,11 @@ class Color:
 # 5. output_path => path to output_format
 
 class Download:
-    def __init__(self, output_format: str, is_playlist: bool , input_type: str, video_source: str, output_path: str = None) -> None:
+    def __init__(self, output_format: str, is_playlist: bool , input_type: str, video_source: str) -> None:
         self.video_source = video_source
         self.output_format = output_format
         self.is_playlist = is_playlist
         self.song_id = []
-        self.output_path = output_path
         self.declare_option(output_format)
 
 
@@ -120,24 +119,11 @@ class Download:
             video_title.append(video.get('title', None))
             for file in os.listdir('./'):
                 if file.endswith('.mp3') or file.endswith('.mp4'):
-                    if self.output_path is not None:
-                        if not os.path.exists(self.output_path):
-                            os.makedirs(self.output_path)
-
-                        try:
-                            os.rename(file, self.output_path + "/" + file)
-                        except FileExistsError:
-                            print(f"{Color.WARNING}File already exists. Skipping.{Color.ENDC}")
-                        except Exception as err:
-                            self.return_class_error(err)
-
-
-                    else:
-                        try:
-                            if not os.path.exists('./downloads'):
-                                os.makedirs('./downloads')
-                            os.rename(file, './downloads/' + file)
-                        except FileExistsError:
-                            print(f"{Color.WARNING}File {file} already exists.{Color.ENDC}")
-                        except Exception as err:
-                            return self.return_class_error(err)
+                    try:
+                        if not os.path.exists('./downloads'):
+                            os.makedirs('./downloads')
+                        os.rename(file, './downloads/' + file)
+                    except FileExistsError:
+                        print(f"{Color.WARNING}File {file} already exists.{Color.ENDC}")
+                    except Exception as err:
+                        return self.return_class_error(err)

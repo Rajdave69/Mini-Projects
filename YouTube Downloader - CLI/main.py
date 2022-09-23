@@ -51,11 +51,10 @@ class Initialize:
 
         self.get_input_type() # Get input_type and video_source
         self.get_output_format() # Get output_format
-        self.get_output_path() # Get output_path
         self.get_is_playlist() # Get is_playlist
 
 
-        dwn = Download(input_type=self.input_type, is_playlist=self.is_playlist, video_source=self.video_source, output_format=self.output_format, output_path=self.output_path)
+        dwn = Download(input_type=self.input_type, is_playlist=self.is_playlist, video_source=self.video_source, output_format=self.output_format)
         if dwn in ["invalid_input_type", "invalid_url", "invalid_output_type"]:
             print(f"{Color.FAIL}There was an error downloading the file!")
             print(f"Error code: {dwn}{Color.ENDC}")
@@ -107,12 +106,7 @@ class Initialize:
             self.get_output_format()
 
 
-    def get_output_path(self):
-        self.output_path = input("Enter output path: ")
-        # regex to check if valid path
-        if not re.match(r'^(/[a-zA-Z\d_\-\s]+)+$', self.output_path):
-            print(f"{Color.FAIL}Invalid output path{Color.ENDC}")
-            self.get_output_path()
+
 
 
 
